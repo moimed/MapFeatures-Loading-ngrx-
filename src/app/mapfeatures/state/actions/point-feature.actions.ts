@@ -13,7 +13,16 @@ export const pointFeaturesLoaded = createAction(
 );
 
 export const addSelectedPoint = createAction(
-    '[Point Feature] Point Features Selected',
+    '[Point Feature] Select Point',
     props<{selectedFeature: SelectedFeature}>()
+);
+
+export const removeSelectedPoint = createAction(
+    '[Point Feature] Unselect Point',
+    props<{selectedFeature: SelectedFeature}>()
+);
+
+export const removeAllSelectedPoint = createAction(
+    '[Point Feature] Unselect All Points',
 );
 

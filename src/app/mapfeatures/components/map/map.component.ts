@@ -9,6 +9,7 @@ import { selectLineFeatures, selectPointFeatures, selectPolygonFeatures } from '
 import { PointFeature } from '../../models/point-feature.model';
 import { LineFeature } from '../../models/line-feature.model';
 import { PolygonFeature } from '../../models/polygon-feature.model';
+import { addSelectedPoint, removeAllSelectedPoint, removeSelectedPoint} from '../../state/actions/point-feature.actions';
 
 import Graphic from "@arcgis/core/Graphic";
 import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
@@ -19,8 +20,8 @@ import Polyline from "@arcgis/core/geometry/Polyline";
 import SimpleLineSymbol from "@arcgis/core/symbols/SimpleLineSymbol";
 import Polygon from "@arcgis/core/geometry/Polygon";
 import SimpleFillSymbol from "@arcgis/core/symbols/SimpleFillSymbol";
-import { addSelectedPoint} from '../../state/actions/point-feature.actions';
-import { SelectedFeature } from '../../models/selected-feature.model';
+import FeatureTable from "@arcgis/core/widgets/FeatureTable";
+
 
 @Component({
   selector: 'app-map',
@@ -71,15 +72,13 @@ export class MapComponent implements OnInit {
     this.store.dispatch({ type: '[Point Feature] Load Point Features' });
     this.store.dispatch({ type: '[Line Feature] Load Line Features' });
     this.store.dispatch({ type: '[Polygon Feature] Load Polygon Features' });
-    this.store.dispatch(addSelectedPoint({selectedFeature: {id: 1, type: 'Point'}}));
-    this.store.dispatch(addSelectedPoint({selectedFeature: {id: 2, type: 'Polygon'}}));
     this.initializeMap().then(() => {
       console.log('The map is ready.');
     }).then(() => {
       this.displayPointFeatures();
       this.displayLineFeatures();
       this.displayPolygonFeatures();
-          }).catch((error) => console.error(error));
+    }).catch((error) => console.error(error));
     ;
 
   }
@@ -176,6 +175,29 @@ export class MapComponent implements OnInit {
         ],
       });
       this.map.add(pointsFeatureLayer);
+
+      const featureTable = new FeatureTable({
+        view: this.view, 
+        layer: pointsFeatureLayer,
+        container: 'att',
+        // fieldConfigs: [],
+        editingEnabled: true
+      });
+      this.view.ui.add(featureTable, {
+        position: "top-right"
+      });
+
+      featureTable.on('selection-change', (event) => {
+        if (event.added.length > 0) 
+          this.store.dispatch(addSelectedPoint({selectedFeature: {id: event.added[0].feature.attributes.ObjectID, type: 'Point'}}));
+        if (event.removed.length === 1) {
+          this.store.dispatch(removeSelectedPoint({selectedFeature: {id: event.removed[0].feature.attributes.ObjectID, type: 'Point'}}));
+        } 
+        else if (event.removed.length > 0) {
+          this.store.dispatch(removeAllSelectedPoint());
+        }
+      });
+
       console.log("Point Features Loaded");
     });
   }
