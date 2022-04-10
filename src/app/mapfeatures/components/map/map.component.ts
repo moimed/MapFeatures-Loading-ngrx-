@@ -19,6 +19,8 @@ import Polyline from "@arcgis/core/geometry/Polyline";
 import SimpleLineSymbol from "@arcgis/core/symbols/SimpleLineSymbol";
 import Polygon from "@arcgis/core/geometry/Polygon";
 import SimpleFillSymbol from "@arcgis/core/symbols/SimpleFillSymbol";
+import { addSelectedPoint} from '../../state/actions/point-feature.actions';
+import { SelectedFeature } from '../../models/selected-feature.model';
 
 @Component({
   selector: 'app-map',
@@ -69,6 +71,8 @@ export class MapComponent implements OnInit {
     this.store.dispatch({ type: '[Point Feature] Load Point Features' });
     this.store.dispatch({ type: '[Line Feature] Load Line Features' });
     this.store.dispatch({ type: '[Polygon Feature] Load Polygon Features' });
+    this.store.dispatch(addSelectedPoint({selectedFeature: {id: 1, type: 'Point'}}));
+    this.store.dispatch(addSelectedPoint({selectedFeature: {id: 2, type: 'Polygon'}}));
     this.initializeMap().then(() => {
       console.log('The map is ready.');
     }).then(() => {
