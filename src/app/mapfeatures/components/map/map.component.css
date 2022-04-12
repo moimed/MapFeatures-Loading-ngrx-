@@ -5,6 +5,7 @@
   height: 100%;
   width: 100%;
 }
+
 #map_container {
   padding: 0;
   margin: 0;
@@ -12,7 +13,8 @@
   width: 100vw;
 }
 
-#att{
+#attributes-table{
   height: 90vh;
   width: 20vw;
+  background-color: rgb(215, 199, 199);
 }

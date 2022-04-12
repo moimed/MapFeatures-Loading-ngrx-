@@ -9,7 +9,7 @@ import { selectLineFeatures, selectPointFeatures, selectPolygonFeatures } from '
 import { PointFeature } from '../../models/point-feature.model';
 import { LineFeature } from '../../models/line-feature.model';
 import { PolygonFeature } from '../../models/polygon-feature.model';
-import { addSelectedPoint, removeAllSelectedPoint, removeSelectedPoint} from '../../state/actions/point-feature.actions';
+import { addSelectedMapFeature, removeAllSelectedMapFeatures, removeSelectedMapFeature} from '../../state/actions/map-feature.actions';
 
 import Graphic from "@arcgis/core/Graphic";
 import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
@@ -79,8 +79,6 @@ export class MapComponent implements OnInit {
       this.displayLineFeatures();
       this.displayPolygonFeatures();
     }).catch((error) => console.error(error));
-    ;
-
   }
 
   makePointGraphics = (pointFeatures: PointFeature[]): Graphic[] => {
@@ -174,35 +172,34 @@ export class MapComponent implements OnInit {
           },
         ],
       });
-      this.map.add(pointsFeatureLayer);
-
-      const featureTable = new FeatureTable({
+      
+      const pointsFeatureTable = new FeatureTable({
         view: this.view, 
+        visible: true,
         layer: pointsFeatureLayer,
-        container: 'att',
-        // fieldConfigs: [],
-        editingEnabled: true
+        container: 'attributes-table',
       });
-      this.view.ui.add(featureTable, {
+      this.view.ui.add(pointsFeatureTable, {
         position: "top-right"
       });
 
-      featureTable.on('selection-change', (event) => {
+      pointsFeatureTable.on('selection-change', (event) => {
         if (event.added.length > 0) 
-          this.store.dispatch(addSelectedPoint({selectedFeature: {id: event.added[0].feature.attributes.ObjectID, type: 'Point'}}));
+        this.store.dispatch(addSelectedMapFeature({selectedFeature: {id: event.added[0].feature.attributes.ObjectID, type: 'Point'}}));
         if (event.removed.length === 1) {
-          this.store.dispatch(removeSelectedPoint({selectedFeature: {id: event.removed[0].feature.attributes.ObjectID, type: 'Point'}}));
+          this.store.dispatch(removeSelectedMapFeature({selectedFeature: {id: event.removed[0].feature.attributes.ObjectID, type: 'Point'}}));
         } 
         else if (event.removed.length > 0) {
-          this.store.dispatch(removeAllSelectedPoint());
+          this.store.dispatch(removeAllSelectedMapFeatures({featureType: 'Point'}));
         }
       });
 
+      this.map.add(pointsFeatureLayer);
       console.log("Point Features Loaded");
     });
   }
 
-
+  
   displayLineFeatures() {
     let lineFeatures$ = this.store.select(selectLineFeatures);
     lineFeatures$.subscribe(lf => {
@@ -211,7 +208,7 @@ export class MapComponent implements OnInit {
       let linesFeatureLayer = new FeatureLayer({
         title: 'Line features',
         source: this.makeLineGraphics(lf),
-        // editingEnabled: true,
+        visible: false,
         objectIdField: 'ObjectID',
         renderer: new SimpleRenderer({
           symbol: new SimpleLineSymbol({
@@ -244,6 +241,28 @@ export class MapComponent implements OnInit {
           },
         ],
       });
+
+      const linesFeatureTable = new FeatureTable({
+        view: this.view, 
+        visible: true,
+        layer: linesFeatureLayer,
+        container: 'attributes-table',
+      });
+      this.view.ui.add(linesFeatureTable, {
+        position: "top-right"
+      });
+
+      linesFeatureTable.on('selection-change', (event) => {
+        if (event.added.length > 0) 
+          this.store.dispatch(addSelectedMapFeature({selectedFeature: {id: event.added[0].feature.attributes.ObjectID, type: 'LineString'}}));
+        if (event.removed.length === 1) {
+          this.store.dispatch(removeSelectedMapFeature({selectedFeature: {id: event.removed[0].feature.attributes.ObjectID, type: 'LineString'}}));
+        } 
+        else if (event.removed.length > 0) {
+          this.store.dispatch(removeAllSelectedMapFeatures({featureType: 'LineString'}));
+        }
+      });
+
       this.map.add(linesFeatureLayer);
       console.log("Line Features Loaded");
     });
@@ -257,7 +276,7 @@ export class MapComponent implements OnInit {
       let polygonsFeatureLayer = new FeatureLayer({
         title: 'Polygon features',
         source: this.makePolygonGraphics(pf),
-        // editingEnabled: true,
+        visible: false,
         objectIdField: 'ObjectID',
         renderer: new SimpleRenderer({
           symbol: new SimpleFillSymbol({
@@ -294,6 +313,28 @@ export class MapComponent implements OnInit {
           },
         ],
       });
+
+      const polygonsFeatureTable = new FeatureTable({
+        view: this.view, 
+        visible: true,
+        layer: polygonsFeatureLayer,
+        container: 'attributes-table',
+      });
+      this.view.ui.add(polygonsFeatureTable, {
+        position: "top-right"
+      });
+
+      polygonsFeatureTable.on('selection-change', (event) => {
+        if (event.added.length > 0) 
+          this.store.dispatch(addSelectedMapFeature({selectedFeature: {id: event.added[0].feature.attributes.ObjectID, type: 'Polygon'}}));
+        if (event.removed.length === 1) {
+          this.store.dispatch(removeSelectedMapFeature({selectedFeature: {id: event.removed[0].feature.attributes.ObjectID, type: 'Polygon'}}));
+        } 
+        else if (event.removed.length > 0) {
+          this.store.dispatch(removeAllSelectedMapFeatures({featureType: 'Polygon'}));
+        }
+      });
+
       this.map.add(polygonsFeatureLayer);
       console.log("Polygon Features Loaded");
     });
